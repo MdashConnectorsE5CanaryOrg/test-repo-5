@@ -1,0 +1,76 @@
+﻿name: Lint
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install linters
+      run: pip install flake8 pylint
+    - name: Run flake8
+      run: flake8 python/ --count --show-source --statistics
+    - name: Run pylint
+      run: pylint python/ --exit-zero
+
+  lint-javascript:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Install ESLint
+      run: npm install -g eslint
+    - name: Run ESLint on Node.js
+      run: eslint nodejs/ --ext .js || true
+    - name: Run ESLint on TypeScript
+      run: eslint typescript/ --ext .ts || true
+
+  lint-go:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v4
+      with:
+        working-directory: go
+
+  lint-ruby:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+    - name: Install RuboCop
+      run: gem install rubocop
+    - name: Run RuboCop
+      run: rubocop ruby/ --format simple || true
+
+  lint-rust:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: clippy
+    - name: Run Clippy
+      run: cd rust && cargo clippy -- -D warnings || true
