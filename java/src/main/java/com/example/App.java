@@ -1,8 +1,8 @@
-﻿package com.example;
+package com.example;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.Scanner;
 
 public class App {
@@ -13,10 +13,12 @@ public class App {
         
         try {
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/test");
-            Statement stmt = conn.createStatement();
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT * FROM users WHERE username = ?"
+            );
             // Potential SQL injection vulnerability for testing
-            String query = "SELECT * FROM users WHERE username = '" + username + "'";
-            stmt.executeQuery(query);
+            stmt.setString(1, username);
+            stmt.executeQuery();
         } catch (Exception e) {
             e.printStackTrace();
         }
