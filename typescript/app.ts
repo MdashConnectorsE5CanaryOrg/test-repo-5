@@ -1,6 +1,7 @@
-﻿import * as http from 'http';
+import * as http from 'http';
 import * as url from 'url';
 import * as fs from 'fs';
+import * as path from 'path';
 
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url || '', true);
@@ -8,7 +9,16 @@ const server = http.createServer((req, res) => {
     
     // Potential path traversal vulnerability for testing
     if (filename) {
-        fs.readFile(filename, (err, data) => {
+        const baseDir = path.resolve(process.cwd(), 'files');
+        const requestedPath = path.resolve(baseDir, filename);
+
+        if (requestedPath !== baseDir && !requestedPath.startsWith(baseDir + path.sep)) {
+            res.writeHead(400);
+            res.end('Invalid file path');
+            return;
+        }
+
+        fs.readFile(requestedPath, (err, data) => {
             if (err) {
                 res.writeHead(404);
                 res.end('File not found');
