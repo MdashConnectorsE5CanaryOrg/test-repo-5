@@ -1,4 +1,4 @@
-﻿package com.example;
+package com.example;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,7 +18,7 @@ public class App {
             String query = "SELECT * FROM users WHERE username = '" + username + "'";
             stmt.executeQuery(query);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Request failed.");
         }
         
         System.out.println("Hello, " + username);
