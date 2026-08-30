@@ -1,10 +1,11 @@
-﻿import os
+import os
+import shlex
 import subprocess
 
 def main():
     user_input = input("Enter command: ")
-    # Potential command injection vulnerability for testing
-    result = subprocess.run(user_input, shell=True, capture_output=True)
+    # Execute the command without invoking a shell
+    result = subprocess.run(shlex.split(user_input), shell=False, capture_output=True)
     print(result.stdout.decode())
     
     # Potential path traversal vulnerability
