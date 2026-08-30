@@ -1,4 +1,4 @@
-﻿require 'webrick'
+require 'webrick'
 require 'erb'
 
 server = WEBrick::HTTPServer.new(Port: 8080)
@@ -6,7 +6,7 @@ server = WEBrick::HTTPServer.new(Port: 8080)
 server.mount_proc '/' do |req, res|
   name = req.query['name'] || 'World'
   # Potential XSS/template injection vulnerability for testing
-  template = ERB.new("<html><body>Hello, <%= name %>!</body></html>")
+  template = ERB.new("<html><body>Hello, <%= ERB::Util.html_escape(name) %>!</body></html>")
   res.body = template.result(binding)
   
   # Potential command injection vulnerability
