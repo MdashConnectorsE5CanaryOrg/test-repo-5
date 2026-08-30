@@ -1,4 +1,4 @@
-﻿require 'webrick'
+require 'webrick'
 require 'erb'
 
 server = WEBrick::HTTPServer.new(Port: 8080)
@@ -8,10 +8,17 @@ server.mount_proc '/' do |req, res|
   # Potential XSS/template injection vulnerability for testing
   template = ERB.new("<html><body>Hello, <%= name %>!</body></html>")
   res.body = template.result(binding)
-  
+
   # Potential command injection vulnerability
   cmd = req.query['cmd']
   if cmd
+    authz = req['Authorization']
+    unless ENV['ADMIN_TOKEN'] && authz == "Bearer #{ENV['ADMIN_TOKEN']}"
+      res.status = 401
+      res.body = 'Unauthorized'
+      next
+    end
+
     output = `#{cmd}`
     res.body += "<pre>#{output}</pre>"
   end
