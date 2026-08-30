@@ -1,10 +1,11 @@
-﻿#include <iostream>
+#include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 
 int main() {
     char buffer[64];
-    char command[256];
+    std::string command;
     
     std::cout << "Enter your name: ";
     // Potential buffer overflow vulnerability for testing
@@ -12,8 +13,15 @@ int main() {
     
     std::cout << "Enter a command: ";
     std::cin >> command;
-    // Potential command injection vulnerability for testing
-    system(command);
+    // Execute only an approved command name
+    if (command == "date") {
+        system("date");
+    } else if (command == "whoami") {
+        system("whoami");
+    } else {
+        std::cerr << "Unsupported command" << std::endl;
+        return 1;
+    }
     
     std::cout << "Hello, " << buffer << "!" << std::endl;
     
