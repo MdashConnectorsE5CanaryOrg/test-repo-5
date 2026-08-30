@@ -1,14 +1,25 @@
-﻿const http = require('http');
+const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const path = require('path');
 
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url, true);
     const filename = parsedUrl.query.file;
-    
+    const baseDir = path.resolve(__dirname, 'files');
+
     // Potential path traversal vulnerability for testing
     if (filename) {
-        fs.readFile(filename, (err, data) => {
+        const requestedPath = path.resolve(baseDir, filename);
+        const relativePath = path.relative(baseDir, requestedPath);
+
+        if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+            res.writeHead(400);
+            res.end('Invalid file path');
+            return;
+        }
+
+        fs.readFile(requestedPath, (err, data) => {
             if (err) {
                 res.writeHead(404);
                 res.end('File not found');
