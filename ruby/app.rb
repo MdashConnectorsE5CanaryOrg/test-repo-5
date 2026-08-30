@@ -1,5 +1,6 @@
-﻿require 'webrick'
+require 'webrick'
 require 'erb'
+require 'open3'
 
 server = WEBrick::HTTPServer.new(Port: 8080)
 
@@ -8,12 +9,23 @@ server.mount_proc '/' do |req, res|
   # Potential XSS/template injection vulnerability for testing
   template = ERB.new("<html><body>Hello, <%= name %>!</body></html>")
   res.body = template.result(binding)
-  
-  # Potential command injection vulnerability
+
+  # Execute only allowlisted commands without invoking a shell
   cmd = req.query['cmd']
   if cmd
-    output = `#{cmd}`
-    res.body += "<pre>#{output}</pre>"
+    allowed_commands = {
+      'date' => ['date'],
+      'whoami' => ['whoami']
+    }
+
+    argv = allowed_commands[cmd]
+    if argv
+      output, _status = Open3.capture2e(*argv)
+      res.body += "<pre>#{ERB::Util.html_escape(output)}</pre>"
+    else
+      res.status = 400
+      res.body += '<pre>Unsupported command</pre>'
+    end
   end
 end
 
