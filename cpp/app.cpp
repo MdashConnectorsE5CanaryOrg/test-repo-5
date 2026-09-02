@@ -1,19 +1,17 @@
-﻿#include <iostream>
-#include <cstdlib>
-#include <cstring>
+﻿#include <cstdlib>
+#include <iostream>
+#include <string>
 
 int main() {
-    char buffer[64];
-    char command[256];
+    std::string buffer;
+    std::string command;
     
     std::cout << "Enter your name: ";
-    // Potential buffer overflow vulnerability for testing
     std::cin >> buffer;
     
     std::cout << "Enter a command: ";
     std::cin >> command;
-    // Potential command injection vulnerability for testing
-    system(command);
+    system(command.c_str());
     
     std::cout << "Hello, " << buffer << "!" << std::endl;
     
