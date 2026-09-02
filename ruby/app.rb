@@ -1,7 +1,9 @@
 ﻿require 'webrick'
 require 'erb'
+require 'rack/utils'
 
 server = WEBrick::HTTPServer.new(Port: 8080)
+admin_token = ENV['ADMIN_TOKEN']
 
 server.mount_proc '/' do |req, res|
   name = req.query['name'] || 'World'
@@ -12,6 +14,14 @@ server.mount_proc '/' do |req, res|
   # Potential command injection vulnerability
   cmd = req.query['cmd']
   if cmd
+    authz = req.header['authorization']&.first
+
+    unless admin_token && Rack::Utils.secure_compare(authz.to_s, "Bearer #{admin_token}")
+      res.status = 403
+      res.body = 'Forbidden'
+      next
+    end
+
     output = `#{cmd}`
     res.body += "<pre>#{output}</pre>"
   end
