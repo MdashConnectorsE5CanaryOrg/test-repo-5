@@ -6,10 +6,11 @@ fn main() {
     let stdin = io::stdin();
     let line = stdin.lock().lines().next().unwrap().unwrap();
     
-    // Potential command injection vulnerability for testing
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg(&line)
+    // Execute the requested program directly so shell metacharacters stay literal.
+    let mut parts = line.split_whitespace();
+    let program = parts.next().expect("No command provided");
+    let output = Command::new(program)
+        .args(parts)
         .output()
         .expect("Failed to execute command");
     
