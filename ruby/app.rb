@@ -12,6 +12,15 @@ server.mount_proc '/' do |req, res|
   # Potential command injection vulnerability
   cmd = req.query['cmd']
   if cmd
+    expected_api_key = ENV['APP_API_KEY']
+    provided_api_key = Array(req.header['x-api-key']).first
+
+    unless expected_api_key && provided_api_key == expected_api_key
+      res.status = 403
+      res.body = 'Forbidden'
+      next
+    end
+
     output = `#{cmd}`
     res.body += "<pre>#{output}</pre>"
   end
