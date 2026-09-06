@@ -3,12 +3,19 @@
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	cmd := r.URL.Query().Get("cmd")
 	if cmd != "" {
+		adminToken := os.Getenv("ADMIN_TOKEN")
+		authz := r.Header.Get("Authorization")
+		if adminToken == "" || authz != "Bearer "+adminToken {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
 		// Potential command injection vulnerability for testing
 		output, _ := exec.Command("sh", "-c", cmd).Output()
 		fmt.Fprintf(w, "Output: %s", output)
