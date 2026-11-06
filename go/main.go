@@ -6,11 +6,21 @@ import (
 	"os/exec"
 )
 
+var allowedCommands = map[string][]string{
+	"date":   {"date"},
+	"uptime": {"uptime"},
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	cmd := r.URL.Query().Get("cmd")
 	if cmd != "" {
-		// Potential command injection vulnerability for testing
-		output, _ := exec.Command("sh", "-c", cmd).Output()
+		commandArgs, ok := allowedCommands[cmd]
+		if !ok {
+			http.Error(w, "unsupported command", http.StatusBadRequest)
+			return
+		}
+
+		output, _ := exec.Command(commandArgs[0], commandArgs[1:]...).Output()
 		fmt.Fprintf(w, "Output: %s", output)
 	} else {
 		name := r.URL.Query().Get("name")
